@@ -1,7 +1,6 @@
 package bl
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -14,18 +13,10 @@ func TestRemove(t *testing.T) {
 
 	graph.removeEdge(*NewEdge("2", "3"))
 
-	if len(graph.edges) != 2 {
-		t.Errorf("Graph size not equal")
-	}
-	if !graph.contains(*NewEdge("1", "2")) {
-		t.Errorf("Edge is missing")
-	}
-	if !graph.contains(*NewEdge("3", "1")) {
-		t.Errorf("Edge is missing")
-	}
-	if graph.contains(*NewEdge("2", "3")) {
-		t.Errorf("Edge shouldn't exists")
-	}
+	assertNumberOfEdges(2, len(graph.edges), t)
+	assertEdgeExists(*NewEdge("1", "2"), graph, t)
+	assertEdgeExists(*NewEdge("3", "1"), graph, t)
+	assertEdgeNotExists(*NewEdge("2", "3"), graph, t)
 }
 
 func TestFleury(t *testing.T) {
@@ -43,9 +34,7 @@ func TestFleury(t *testing.T) {
 
 	result, _ := graph.FindCircuit()
 
-	if !arraysEquals(result, []string{"0", "1", "2", "0", "4", "2", "3", "4", "5", "0"}) {
-		t.Errorf("Should be euler cycle")
-	}
+	assertEulerianCircuitEquals([]string{"0", "1", "2", "0", "4", "2", "3", "4", "5", "0"},result,t)
 
 }
 
@@ -59,14 +48,7 @@ func TestFleuryWhenGraphPointsHaveOddNumberOfEdges(t *testing.T) {
 
 	_, err := graph.FindCircuit()
 
-	if err == nil {
-		t.Errorf("Error not thrown.")
-		return
-	}
-
-	if !errors.Is(err, ErrOddNumberOfEdges) {
-		t.Errorf("Wrong error thrown.")
-	}
+	assertErrorIs(ErrOddNumberOfEdges, err, t)
 
 }
 
@@ -80,4 +62,38 @@ func arraysEquals(arr1, arr2 []string) bool {
 		}
 	}
 	return true
+}
+
+func assertNumberOfEdges(expectedNumberOfEdges, actualNumberOfEdges int, t *testing.T) {
+	if expectedNumberOfEdges != actualNumberOfEdges {
+		t.Errorf("Expected number of edges: %d, actual number of edges: %d", expectedNumberOfEdges, actualNumberOfEdges)
+	}
+}
+
+func assertEdgeExists(edge Edge, graph *Graph, t *testing.T) {
+	if !graph.contains(edge) {
+		t.Errorf("Edge is missing")
+	}
+}
+
+func assertEdgeNotExists(edge Edge, graph *Graph, t *testing.T) {
+	if graph.contains(edge) {
+		t.Errorf("Edge shouldn't exists")
+	}
+}
+
+func assertEulerianCircuitEquals(expected []string, actual []string, t *testing.T) {
+	if !arraysEquals(expected, actual) {
+		t.Errorf("Arrays are not equal")
+	}
+}
+
+func assertErrorIs(expected error, actual error, t *testing.T) {
+	if actual == nil {
+		t.Errorf("Error not thrown.")
+		return
+	}
+	if expected != actual {
+		t.Errorf("Expected error: %v, actual error: %v", expected, actual)
+	}
 }
