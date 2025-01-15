@@ -155,3 +155,11 @@ func (graph *Graph) isIn(element string, list []string) bool {
 func (graph *Graph) GetId() string {
 	return graph.id
 }
+
+func (graph *Graph) GetEdges() []string {
+    edges := []string{}
+    for _, edge := range graph.edges {
+        edges = append(edges, edge.LeftPoint+" "+edge.RightPoint)
+    }
+    return edges
+}
