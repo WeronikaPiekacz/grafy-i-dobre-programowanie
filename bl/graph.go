@@ -10,9 +10,10 @@ var ErrGraphDisconnected = errors.New("Graph is not eulerian circle - Graph is D
 
 // graph.go
 type Graph struct {
-	nodes []string
-	edges []Edge
-	id    string
+	nodes                   []string
+	edges                   []Edge
+	id                      string
+	potentiallyVisitedNodes map[string]bool
 }
 
 func NewGraph(nodes []string, edges []Edge, graphId ...string) *Graph {
@@ -21,7 +22,7 @@ func NewGraph(nodes []string, edges []Edge, graphId ...string) *Graph {
 	if len(graphId) == 1 {
 		return &Graph{id: graphId[0], nodes: nodes, edges: uniqueEdges}
 	}
-	return &Graph{id: uuid.New().String(), nodes: nodes, edges: uniqueEdges}
+	return &Graph{id: uuid.New().String(), nodes: nodes, edges: uniqueEdges, potentiallyVisitedNodes: make(map[string]bool)}
 }
 
 func unique(edges []Edge) []Edge {
@@ -69,12 +70,12 @@ func (graph *Graph) FindCircuit() ([]string, error) {
 	if graph.hasEachNodeOddDegree() {
 		return path, ErrOddNumberOfEdges
 	}
+	if graph.hasDisconnectedNode() {
+		return path, ErrGraphDisconnected
+	}
 	startNode := graph.findStartVert()
 	circuitFound := false
 	result := graph.solve(startNode, &path, &circuitFound)
-	if !graph.isAllNodesInCircuit(result) {
-		return []string{}, ErrGraphDisconnected
-	}
 	return result, nil
 }
 
@@ -134,32 +135,43 @@ func (graph *Graph) isBridge(node string) bool {
 	return len(graph.getNeighboursOf(node)) <= 1
 }
 
-func (graph *Graph) isAllNodesInCircuit(result []string) bool {
-	for _, node := range graph.nodes {
-		if !graph.isIn(node, result) {
-			return false
-		}
-	}
-	return true
+func (graph *Graph) GetId() string {
+	return graph.id
 }
 
-func (graph *Graph) isIn(element string, list []string) bool {
-	for _, el := range list {
-		if el == element {
+func (graph *Graph) GetEdges() []string {
+	edges := []string{}
+	for _, edge := range graph.edges {
+		edges = append(edges, edge.LeftPoint+" "+edge.RightPoint)
+	}
+	return edges
+}
+
+func (graph *Graph) hasDisconnectedNode() bool {
+	var potentiallyVisitedNodes = make(map[string]bool)
+	graph.dfs(graph.nodes[0], potentiallyVisitedNodes)
+	for _, node := range graph.nodes {
+		if !graph.isInKeys(node, potentiallyVisitedNodes) {
 			return true
 		}
 	}
 	return false
 }
 
-func (graph *Graph) GetId() string {
-	return graph.id
+func (graph *Graph) dfs(start string, visitedNodes map[string]bool) {
+	visitedNodes[start] = true
+	for _, neighbour := range graph.getNeighboursOf(start) {
+		if !visitedNodes[neighbour] {
+			graph.dfs(neighbour, visitedNodes)
+		}
+	}
 }
 
-func (graph *Graph) GetEdges() []string {
-    edges := []string{}
-    for _, edge := range graph.edges {
-        edges = append(edges, edge.LeftPoint+" "+edge.RightPoint)
-    }
-    return edges
+func (graph *Graph) isInKeys(element string, m map[string]bool) bool {
+	for key := range m {
+		if key == element {
+			return true
+		}
+	}
+	return false
 }
