@@ -6,6 +6,7 @@ import (
 )
 
 var ErrOddNumberOfEdges = errors.New("Graph is not eulerian circle - Number of edges are not even.")
+var ErrGraphDisconnected = errors.New("Graph is not eulerian circle - Graph is Disconnected")
 
 // graph.go
 type Graph struct {
@@ -68,10 +69,13 @@ func (graph *Graph) FindCircuit() ([]string, error) {
 	if graph.hasEachNodeOddDegree() {
 		return path, ErrOddNumberOfEdges
 	}
-
 	startNode := graph.findStartVert()
 	circuitFound := false
-	return graph.solve(startNode, &path, &circuitFound), nil
+	result := graph.solve(startNode, &path, &circuitFound)
+	if !graph.isAllNodesInCircuit(result) {
+		return []string{}, ErrGraphDisconnected
+	}
+	return result, nil
 }
 
 func (graph *Graph) hasEachNodeOddDegree() bool {
@@ -128,4 +132,26 @@ func (graph *Graph) getNeighboursOf(node string) []string {
 
 func (graph *Graph) isBridge(node string) bool {
 	return len(graph.getNeighboursOf(node)) <= 1
+}
+
+func (graph *Graph) isAllNodesInCircuit(result []string) bool {
+	for _, node := range graph.nodes {
+		if !graph.isIn(node, result) {
+			return false
+		}
+	}
+	return true
+}
+
+func (graph *Graph) isIn(element string, list []string) bool {
+	for _, el := range list {
+		if el == element {
+			return true
+		}
+	}
+	return false
+}
+
+func (graph *Graph) GetId() string {
+	return graph.id
 }

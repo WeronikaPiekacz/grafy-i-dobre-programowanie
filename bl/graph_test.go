@@ -34,7 +34,7 @@ func TestFleury(t *testing.T) {
 
 	result, _ := graph.FindCircuit()
 
-	assertEulerianCircuitEquals([]string{"0", "1", "2", "0", "4", "2", "3", "4", "5", "0"},result,t)
+	assertEulerianCircuitEquals([]string{"0", "1", "2", "0", "4", "2", "3", "4", "5", "0"}, result, t)
 
 }
 
@@ -50,6 +50,29 @@ func TestFleuryWhenGraphPointsHaveOddNumberOfEdges(t *testing.T) {
 
 	assertErrorIs(ErrOddNumberOfEdges, err, t)
 
+}
+
+func TestFleuryWhenGraphDisconnected(t *testing.T) {
+	graph := NewGraph([]string{"1", "2", "3", "4", "5", "6", "7", "8"}, []Edge{
+		*NewEdge("1", "2"),
+		*NewEdge("1", "4"),
+		*NewEdge("2", "1"),
+		*NewEdge("2", "3"),
+		*NewEdge("3", "2"),
+		*NewEdge("3", "4"),
+		*NewEdge("5", "6"),
+		*NewEdge("5", "8"),
+		*NewEdge("6", "7"),
+		*NewEdge("6", "5"),
+		*NewEdge("7", "6"),
+		*NewEdge("7", "8"),
+		*NewEdge("8", "7"),
+		*NewEdge("8", "5"),
+	})
+
+	_, err := graph.FindCircuit()
+
+	assertErrorIs(ErrGraphDisconnected, err, t)
 }
 
 func arraysEquals(arr1, arr2 []string) bool {
