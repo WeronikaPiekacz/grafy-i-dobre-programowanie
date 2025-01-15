@@ -43,7 +43,7 @@ func main() {
 		}
 
 		for _, str := range result {
-			fmt.Printf(" %s  .", str)
+			fmt.Printf(" %s ", str)
 		}
 	}
 

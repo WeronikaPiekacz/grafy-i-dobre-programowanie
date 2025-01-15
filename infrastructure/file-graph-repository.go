@@ -13,7 +13,6 @@ type FileGraphRepository struct {
 	DirectoryPath string
 }
 
-// Save writes the graph to a file
 func (repo *FileGraphRepository) Save(graph bl.Graph) error {
 	file, err := os.Create(filepath.Join(repo.DirectoryPath, graph.GetId()+".txt"))
 	if err != nil {
@@ -38,7 +37,6 @@ func (repo *FileGraphRepository) Save(graph bl.Graph) error {
 	return nil
 }
 
-// Load reads the graph from a file
 func (repo *FileGraphRepository) Load(graphId string) (*bl.Graph, error) {
 	file, err := os.Open(filepath.Join(repo.DirectoryPath, graphId+".txt"))
 	if err != nil {
@@ -48,12 +46,9 @@ func (repo *FileGraphRepository) Load(graphId string) (*bl.Graph, error) {
 
 	scanner := bufio.NewScanner(file)
 
-	// Skip the first row
 	if scanner.Scan() {
-		// Skipping the first line
 	}
 
-	// Read edges line by line
 	nodes := make(map[string]bool)
 	edges := []bl.Edge{}
 	for scanner.Scan() {
