@@ -19,7 +19,7 @@ func main() {
 	configuration := configService.ReadConfig()
 	if configuration.IsFileBasedGraphReadingEnabled {
 		service = bl.GetGraphServiceInstance(infrastructure.GetInMemoryGraphRepositoryInstance())
-		result, err := service.Solve("example_2_improved")
+		result, err := service.Solve("example_5")
 		if err != nil {
 			fmt.Printf(err.Error())
 		}
